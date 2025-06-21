@@ -1,21 +1,34 @@
-# ApkEncryptor
-A android app for encrypting apk
+# APKEncryptor
 
-2年前在业余时间写的小工具，如今也不维护了，开源出来供各位研究
+**Comprehensive toolkit for protecting Android applications through resource encryption and VIP licence management.**
 
-![](https://github.com/FlyingYu-Z/ApkEncryptor/blob/main/screenshot.png)
+This repository is an actively maintained fork of the original work by [FlyingYu-Z](https://github.com/FlyingYu-Z/ApkEncryptor). All credit for the groundbreaking idea and first implementation belongs to the original author. This fork focuses on clearer documentation, build automation and minor bug-fixes; no functional changes are introduced without attribution.
 
-已上架Google Play：
-https://play.google.com/store/apps/details?id=cn.beingyi.apkencryptor&hl=zh&gl=US
+![Screenshot](https://github.com/redzonerror/ApkEncryptor/blob/main/screenshot.png)
 
-- **APKEncryptor-Android：**client for encryption
-- **APKEncryptor-Server：**server for verifying vip
-- **APKEncryptor-Tools：**encrypt assets
-- **KeyCreateor-Andtoid：**greateor key of vip
-- **SubApplication：**shell
+## Modules at a glance
 
--
-- License：
+| Module | Purpose |
+|--------|---------|
+| `APKEncryptor-Android` | End-user client that performs local APK encryption and communicates with the server |
+| `APKEncryptor-Server` | Java TCP service (default **6666**) that validates VIP status and stores data in MySQL |
+| `APKEncryptor-Tools` | Command-line helpers that encrypt assets and patch the SubApplication shell |
+| `KeyCreateor-Andtoid` | Android admin app used to generate VIP licence keys |
+| `SubApplication` | Lightweight shell APK dynamically loaded by the client |
+
+## Getting started
+
+A complete, step-by-step installation guide is available in [`SYSTEM_SETUP.md`](./SYSTEM_SETUP.md). Each sub-project also ships with its own `README.md` detailing prerequisites and build commands.
+
+## Credits
+
+* Original author: **FlyingYu-Z**  
+* Current maintainer of this fork: **redzonerror**
+
+---
+
+## License
+
 
 > Copyright (c) <year> <copyright holders>
 > 
