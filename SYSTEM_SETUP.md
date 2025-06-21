@@ -47,11 +47,90 @@ $ mysql --version
 
 ## 2. Prepare the database
 
-```sql
-CREATE DATABASE apk_encryptor CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+1. Create the database:
+   ```sql
+   CREATE DATABASE apk_encryptor CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
 
-Import the table schemas contained in `APKEncryptor-Server/src/cn/beingyi/apkenceyptor/sql/*.txt`.
+2. Import the full schema (recommended):
+
+   **Option 1: Using MySQL command line**
+   ```bash
+   # Navigate to the SQL directory
+   cd ~/ApkEncryptor/APKEncryptor-Server/src/cn/beingyi/apkenceyptor/sql/
+   
+   # Import the complete schema (you'll be prompted for MySQL root password)
+   mysql -u root -p apk_encryptor < schema.sql
+   ```
+   > **Note about MySQL authentication:**
+   > - If you have a MySQL root password, you'll be prompted to enter it after running each command.
+   > - If you don't have a MySQL root password, simply remove the `-p` flag from the commands.
+   >
+   > **Examples:**
+   > ```bash
+   > # With password (you'll be prompted to enter it):
+   > mysql -u root -p apk_encryptor < schema.sql
+   > 
+   > # Without password (no password set for root):
+   > mysql -u root apk_encryptor < schema.sql
+   > ```
+
+   **Option 2: From MySQL prompt**
+   ```sql
+   USE apk_encryptor;
+   SOURCE ~/ApkEncryptor/APKEncryptor-Server/src/cn/beingyi/apkenceyptor/sql/schema.sql;
+   ```
+
+3. Verify the database setup:
+
+   ```sql
+   -- Connect to MySQL if not already connected
+   mysql -u root -p
+   
+   -- Verify database exists
+   SHOW DATABASES LIKE 'apk_encryptor';
+
+   -- Select the database
+   USE apk_encryptor;
+   
+   -- List all tables (should show 4 tables)
+   SHOW TABLES;
+   
+   -- Check table structures
+   DESCRIBE code;
+   DESCRIBE feedback;
+   DESCRIBE `keys`;
+   DESCRIBE users;
+   
+   -- Count records in each table (should be 0 or more)
+   SELECT 'code' as table_name, COUNT(*) as row_count FROM code
+   UNION ALL
+   SELECT 'feedback' as table_name, COUNT(*) as row_count FROM feedback
+   UNION ALL
+   SELECT 'keys' as table_name, COUNT(*) as row_count FROM `keys`
+   UNION ALL
+   SELECT 'users' as table_name, COUNT(*) as row_count FROM users;
+   ```
+   
+   Expected output:
+   ```
+   +--------------------+
+   | Database (apk_encryptor) |
+   +--------------------+
+   | apk_encryptor      |
+   +--------------------+
+   
+   +---------------------+
+   | Tables_in_apk_encryptor |
+   +---------------------+
+   | code               |
+   | feedback           |
+   | keys               |
+   | users              |
+   +---------------------+
+   ```
+   
+   Each `DESCRIBE` command will show the structure of its respective table.
 
 ---
 
@@ -63,6 +142,10 @@ DB_NAME=apk_encryptor
 DB_USER=root
 DB_PASS=passw0rd
 RootPath=/opt/apkencryptor
+
+# This should be the public-facing URL to your server.
+# If not using a reverse proxy, it must include the port (e.g., http://1.2.3.4:6666/).
+# If using a domain and reverse proxy, it might be http://your-domain.com/.
 RootURL=http://your-domain.com/
 ```
 
@@ -157,7 +240,7 @@ Ensure the device or emulator can reach the server (`ping <server-ip>` from a re
 Create or edit `APKEncryptor-Android/app/src/main/assets/conf.json`:
 ```json
 {
-  "server_ip"   : "192.168.0.42",
+  "server_ip"   : "YOUR_SERVER_IP",
   "server_port" : 6666,
   "SubApplication" : "cn.beingyi.sub.apps.SubApp.SubApplication"
 }
@@ -187,9 +270,9 @@ Adjust the IP/port as needed. **APKEncryptor-Tools** overwrites this file each t
 
 | Scenario | What to do |
 |----------|------------|
-| **Local LAN test-bed** | 1. On the server PC run `ipconfig` (Win) or `ip addr` (Linux) and note the IPv4, e.g. `192.168.0.42`. 2. Edit `APKEncryptor-Android/app/src/main/assets/conf.json` → `"server_ip": "192.168.0.42"`. 3. Optional: `sudo ufw allow 6666/tcp` or enable **Inbound Rule → Port 6666** in Windows Defender Firewall. |
-| **Public VPS / Cloud** | 1. SSH into the VPS and run `curl -4 ifconfig.co` to obtain the public IP. 2. Make sure the provider’s dashboard security-group/firewall allows **TCP 6666**. 3. Also allow it at OS level: `sudo ufw allow 6666/tcp` (Ubuntu) or `firewall-cmd --add-port=6666/tcp --permanent && firewall-cmd --reload` (CentOS). 4. Update `RootURL` in `beingyi.conf` to `http://<public-ip>/` and regenerate the client `conf.json` (rerun **APKEncryptor-Tools**). 5. Optional: point an A-record to the VPS and terminate TLS with Nginx or Caddy (not covered here). |
-| **Android Emulator** | Use IP `10.0.2.2` *or* run `adb reverse tcp:6666 tcp:6666` so the emulator can reach a server running on the host. |
+| **Local LAN test-bed** | 1. On the server PC run `ipconfig` (Win) or `ip addr` (Linux) and note the IPv4, e.g. `192.168.0.42`.<br>2. Update `RootURL` in `beingyi.conf` to `http://<your-lan-ip>:6666/`.<br>3. Edit `APKEncryptor-Android/app/src/main/assets/conf.json` to set `"server_ip": "<your-lan-ip>"`.<br>4. Optional: `sudo ufw allow 6666/tcp` or enable **Inbound Rule → Port 6666** in Windows Defender Firewall. |
+| **Public VPS / Cloud** | 1. SSH into the VPS and run `curl -4 ifconfig.co` to obtain the public IP.<br>2. Update `RootURL` in `beingyi.conf` to `http://<public-ip>:6666/`.<br>3. Make sure the provider’s dashboard security-group/firewall allows **TCP 6666**.<br>4. Also allow it at OS level: `sudo ufw allow 6666/tcp` (Ubuntu) or `firewall-cmd --add-port=6666/tcp --permanent && firewall-cmd --reload` (CentOS).<br>5. Rerun **APKEncryptor-Tools** to apply the new `RootURL` to the client.<br>6. Optional: point an A-record to the VPS and terminate TLS with Nginx or Caddy (not covered here). |
+| **Android Emulator** | Use IP `10.0.2.2` in `conf.json` for the `server_ip` *or* run `adb reverse tcp:6666 tcp:6666` so the emulator can reach a server running on the host. |
 
 After updating the IP/port, either edit `APKEncryptor-Android/app/src/main/assets/conf.json` manually or rerun **APKEncryptor-Tools**, which writes a fresh file during its build step.
 
